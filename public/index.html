@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Screen Share</title>
+
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+
+  <div class="container">
+
+    <!-- ==================================================
+         CABEÇALHO
+         ================================================== -->
+
+
+    <!-- ==================================================
+         LOBBY
+         ================================================== -->
+
+    <section id="lobbyScreen">
+
+      <div class="panel">
+
+        <!-- FORMULÁRIO -->
+
+        <div class="form">
+
+          <input
+            type="text"
+            id="name"
+            maxlength="30"
+            autocomplete="off"
+            placeholder="Seu nome"
+          >
+
+          <input
+            type="text"
+            id="room"
+            maxlength="50"
+            autocomplete="off"
+            placeholder="Nome da sala"
+          >
+
+        </div>
+
+
+        <!-- BOTÕES -->
+
+        <div class="actions">
+
+          <button
+            type="button"
+            id="createBtn"
+            class="btn-primary"
+          >
+            + Criar sala
+          </button>
+
+          <button
+            type="button"
+            id="joinBtn"
+            class="btn-secondary"
+          >
+            Entrar na sala
+          </button>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div
+          id="status"
+          class="status"
+        >
+          Escolha seu nome e crie ou entre em uma sala.
+        </div>
+
+      </div>
+
+
+      <!-- ==================================================
+           SALAS DISPONÍVEIS
+           ================================================== -->
+
+      <div class="rooms-title">
+        Salas disponíveis
+      </div>
+
+      <div
+        id="roomsList"
+        class="rooms-list"
+      >
+
+        <div class="rooms-empty">
+          Carregando salas...
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         SALA
+         ================================================== -->
+
+    <section id="roomScreen">
+
+      <div class="panel">
+
+        <!-- ==================================================
+             CABEÇALHO DA SALA
+             ================================================== -->
+
+        <div class="room-header">
+
+          <div>
+
+            <div class="room-title">
+              Sala:
+              <span id="currentRoom"></span>
+            </div>
+
+            <div
+              id="usersCount"
+              class="room-meta"
+            >
+              0/0 participante
+            </div>
+
+            <div
+              id="usersNames"
+              class="room-meta room-names"
+            ></div>
+
+          </div>
+
+
+          <button
+            type="button"
+            id="chatToggleBtn"
+            class="btn-secondary chat-toggle-btn"
+          >
+            Chat
+            <span
+              id="chatUnread"
+              class="chat-unread"
+            >0</span>
+          </button>
+
+          <button
+            type="button"
+            id="leaveBtn"
+            class="btn-secondary"
+          >
+            Sair da sala
+          </button>
+
+        </div>
+
+
+        <!-- ==================================================
+             CORPO DA SALA (VÍDEOS + CHAT)
+             ================================================== -->
+
+        <div class="room-body">
+
+        <div class="room-main">
+
+        <!-- ==================================================
+             VÍDEOS
+             ================================================== -->
+
+        <div
+          id="videos"
+          class="videos"
+        >
+
+          <!-- ==================================================
+               MINHA TELA
+               ================================================== -->
+
+          <div class="video-box" data-peer-id="local">
+
+            <span class="video-label" title="Arrastar para reordenar">
+              ⠿ Minha tela
+            </span>
+
+            <video
+              id="localVideo"
+              autoplay
+              playsinline
+              muted
+            ></video>
+
+            <div
+              id="localEmpty"
+              class="video-empty"
+            >
+              Nada compartilhado ainda
+            </div>
+
+            <div
+              class="cam-overlay"
+              data-cam-id="local"
+            >
+              <video
+                id="localCamVideo"
+                class="cam-video"
+                autoplay
+                playsinline
+                muted
+              ></video>
+            </div>
+
+            <div class="video-stats" data-peer-id="local">
+              <span class="quality-dot" data-peer-id="local"></span>
+              <span class="stats-text" data-peer-id="local"></span>
+            </div>
+
+            <div class="video-controls" data-peer-id="local">
+
+              <button
+                type="button"
+                class="zoom-out-btn"
+                title="Diminuir zoom"
+              >
+                −
+              </button>
+
+              <span
+                class="zoom-level"
+                data-peer-id="local"
+              >
+                100%
+              </span>
+
+              <button
+                type="button"
+                class="zoom-in-btn"
+                title="Aumentar zoom"
+              >
+                +
+              </button>
+
+              <button
+                type="button"
+                class="zoom-reset-btn"
+                title="Resetar zoom"
+              >
+                ⟲
+              </button>
+
+              <button
+                type="button"
+                class="pip-btn"
+                title="Picture-in-Picture"
+              >
+                🗔
+              </button>
+
+              <button
+                type="button"
+                class="fullscreen-btn"
+                title="Tela cheia"
+              >
+                ⛶
+              </button>
+
+            </div>
+
+            <div
+              class="resize-handle"
+              title="Arrastar para redimensionar"
+            ></div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             CONTROLES
+             ================================================== -->
+
+        <div class="controls">
+
+          <button
+            type="button"
+            id="shareBtn"
+            class="btn-share"
+          >
+            Compartilhar tela
+          </button>
+
+          <button
+            type="button"
+            id="stopBtn"
+            class="btn-stop"
+            disabled
+          >
+            Parar compartilhamento
+          </button>
+
+          <button
+            type="button"
+            id="camBtn"
+            class="btn-cam"
+          >
+            📷 Ligar câmera
+          </button>
+
+        </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             CHAT
+             ================================================== -->
+
+        <aside
+          id="chatPanel"
+          class="chat-panel"
+        >
+
+          <div class="chat-header">
+
+            <span>Chat da sala</span>
+
+            <button
+              type="button"
+              id="chatCloseBtn"
+              class="chat-close"
+            >
+              Fechar
+            </button>
+
+          </div>
+
+          <div
+            id="chatMessages"
+            class="chat-messages"
+          >
+
+            <div class="chat-empty">
+              Nenhuma mensagem ainda.
+            </div>
+
+          </div>
+
+          <form
+            id="chatForm"
+            class="chat-form"
+          >
+
+            <input
+              type="text"
+              id="chatInput"
+              maxlength="500"
+              autocomplete="off"
+              placeholder="Digite uma mensagem..."
+            >
+
+            <button
+              type="submit"
+              class="btn-primary"
+            >
+              Enviar
+            </button>
+
+          </form>
+
+          <div
+            class="panel-resize-handle"
+            title="Arrastar para redimensionar"
+          ></div>
+
+        </aside>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         MODAL: LIMITE DA SALA
+         ================================================== -->
+
+    <div
+      id="createRoomModal"
+      class="modal-overlay"
+    >
+
+      <div class="modal-card">
+
+        <div class="modal-header">
+
+          <div>
+
+            <div class="modal-title">
+              Limite de participantes
+            </div>
+
+            <div class="modal-subtitle">
+              Quantas pessoas podem entrar em
+              "<span id="modalRoomName"></span>"?
+            </div>
+
+          </div>
+
+          <button
+            type="button"
+            id="modalCloseBtn"
+            class="modal-close"
+            aria-label="Fechar"
+          >
+            ✕
+          </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+          <div
+            id="sizePicker"
+            class="size-picker"
+          ></div>
+
+
+          <div class="password-field">
+
+            <label
+              for="createRoomPassword"
+              class="password-label"
+            >
+              🔒 Senha da sala (opcional)
+            </label>
+
+            <input
+              type="password"
+              id="createRoomPassword"
+              maxlength="50"
+              autocomplete="new-password"
+              placeholder="Deixe em branco para não usar senha"
+            >
+
+          </div>
+
+
+          <div
+            id="bandwidthPreview"
+            class="bandwidth-preview"
+          >
+
+            <div class="bandwidth-row">
+              <span class="bandwidth-label">
+                Upload estimado ao compartilhar
+              </span>
+              <span
+                id="bandwidthValue"
+                class="bandwidth-value"
+              ></span>
+            </div>
+
+            <div class="bandwidth-row">
+              <span class="bandwidth-label">
+                Cópias simultâneas em 1080p
+              </span>
+              <span
+                id="bandwidthCopies"
+                class="bandwidth-value"
+              ></span>
+            </div>
+
+            <div
+              id="bandwidthStatus"
+              class="bandwidth-status"
+            >
+              <span
+                id="bandwidthDot"
+                class="status-dot"
+              ></span>
+              <span id="bandwidthStatusText"></span>
+            </div>
+
+            <div
+              id="bandwidthHint"
+              class="bandwidth-hint"
+            ></div>
+
+          </div>
+
+
+          <button
+            type="button"
+            id="tableToggleBtn"
+            class="table-toggle-btn"
+          >
+            Ver tabela completa ▾
+          </button>
+
+          <table
+            id="bandwidthTable"
+            class="bandwidth-table"
+          >
+
+            <thead>
+              <tr>
+                <th>👥 Sala</th>
+                <th>📤 Upload*</th>
+                <th>Estado do PC</th>
+              </tr>
+            </thead>
+
+            <tbody id="bandwidthTableBody"></tbody>
+
+          </table>
+
+          <div
+            id="bandwidthFootnote"
+            class="bandwidth-footnote"
+          >
+            * estimativa de ~5 Mbps de upload por pessoa assistindo em 1080p.
+          </div>
+
+        </div>
+
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            id="modalCancelBtn"
+            class="btn-secondary"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="button"
+            id="modalConfirmBtn"
+            class="btn-primary"
+          >
+            Criar sala
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         MODAL: SENHA PARA ENTRAR
+         ================================================== -->
+
+    <div
+      id="joinPasswordModal"
+      class="modal-overlay"
+    >
+
+      <div class="modal-card modal-card-small">
+
+        <div class="modal-header">
+
+          <div>
+
+            <div class="modal-title">
+              🔒 Sala protegida
+            </div>
+
+            <div class="modal-subtitle">
+              Digite a senha de
+              "<span id="joinPasswordRoomName"></span>"
+              para entrar.
+            </div>
+
+          </div>
+
+          <button
+            type="button"
+            id="joinPasswordCloseBtn"
+            class="modal-close"
+            aria-label="Fechar"
+          >
+            ✕
+          </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+          <input
+            type="password"
+            id="joinPasswordInput"
+            maxlength="50"
+            autocomplete="off"
+            placeholder="Senha da sala"
+          >
+
+          <div
+            id="joinPasswordError"
+            class="password-error"
+          ></div>
+
+        </div>
+
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            id="joinPasswordCancelBtn"
+            class="btn-secondary"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="button"
+            id="joinPasswordConfirmBtn"
+            class="btn-primary"
+          >
+            Entrar
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ====================================================
+       SOCKET.IO
+       ==================================================== -->
+
+  <script src="/socket.io/socket.io.js"></script>
+
+
+  <!-- ====================================================
+       CLIENT WEBRTC (ES modules)
+       ==================================================== -->
+
+  <script type="module" src="/js/main.js"></script>
+
+</body>
+
+</html>
