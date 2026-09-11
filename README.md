@@ -93,8 +93,13 @@ O projeto utiliza HTTPS para permitir o compartilhamento de tela.
 ```powershell
 mkdir cert
 ```
+### 2.1. Criar a pasta
 
-### 2. Entrar na pasta
+```powershell
+mkdir cert
+```
+
+### 2.2. Entrar na pasta
 
 ```powershell
 cd cert
