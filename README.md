@@ -35,7 +35,7 @@ O servidor Node.js é responsável pela **sinalização WebRTC, gerenciamento da
 ## 📁 Estrutura
 
 ```text
-screen-share-p2p/
+Rucord-Web/
 │
 ├── cert/
 │   ├── localhost+2.pem
@@ -187,6 +187,83 @@ https://192.168.1.100:3000
 
 O firewall do Windows pode solicitar permissão para o Node.js aceitar conexões.
 
+## 🌐 Acessar pela Internet
+
+Para permitir que pessoas fora da sua rede local acessem o Rucord Web, é necessário configurar o **redirecionamento de porta (Port Forwarding)** no roteador.
+
+### 1. Descobrir o IPv4 da máquina
+
+Na máquina onde o servidor está executando:
+
+```powershell
+ipconfig
+```
+
+Identifique o endereço IPv4, por exemplo:
+
+```text
+192.168.1.100
+```
+
+### 2. Configurar o roteador
+
+Acesse o painel de administração do seu roteador e procure uma opção como:
+
+```text
+Port Forwarding
+Port Mapping
+Redirecionamento de Portas
+NAT
+Virtual Server
+```
+
+Crie uma regra direcionando a porta utilizada pelo Rucord para o IPv4 da máquina que executa o servidor.
+
+Por exemplo:
+
+```text
+Porta externa: 3000
+IP interno:    192.168.1.100
+Porta interna: 3000
+Protocolo:     TCP
+```
+
+> A configuração exata varia de acordo com o modelo e fabricante do roteador.
+
+### 3. Liberar a porta no Firewall do Windows
+
+O Windows Firewall também pode bloquear conexões externas.
+
+Certifique-se de que a porta utilizada pelo servidor esteja liberada para conexões de entrada.
+
+### 4. Iniciar o servidor
+
+Na pasta do projeto:
+
+```powershell
+npm start
+```
+
+### 5. Descobrir o IP externo
+
+O endereço que será utilizado pelas pessoas é o **IP público da sua conexão com a Internet**, e não o IPv4 local como `192.168.x.x`.
+
+O endereço terá este formato:
+
+```text
+https://SEU_IP_EXTERNO:PORTA
+```
+
+Por exemplo:
+
+```text
+https://200.100.50.25:3000
+```
+
+Esse é o endereço que pode ser enviado para as pessoas acessarem o servidor.
+
+> **Importante:** o IP externo pode mudar dependendo do seu provedor de Internet. Se sua conexão utilizar **CGNAT**, o redirecionamento de portas pode não funcionar diretamente. Nesse caso, será necessário solicitar um IPv4 público ao provedor ou utilizar outra solução de acesso externo.
+
 ## 👥 Como usar
 
 1. Execute `npm start`.
@@ -300,4 +377,16 @@ Depois acesse:
 
 ```text
 https://localhost:3000
+```
+
+Para acesso pela rede local:
+
+```text
+https://IP_LOCAL:3000
+```
+
+Para acesso pela Internet, configure o **redirecionamento da porta no roteador**, libere a porta no firewall quando necessário e envie para os usuários:
+
+```text
+https://SEU_IP_EXTERNO:PORTA
 ```
