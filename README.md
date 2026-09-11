@@ -1,4 +1,4 @@
-# Screen Share P2P
+# Rucord Web
 
 Aplicação de **compartilhamento de tela P2P** utilizando WebRTC.
 
