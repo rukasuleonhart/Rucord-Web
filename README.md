@@ -1,113 +1,303 @@
-# Screen Share P2P (WebRTC bidirecional)
+# Screen Share P2P
 
-Compartilhamento de tela P2P entre usuários de uma sala, cada um podendo
-compartilhar e assistir simultaneamente. O vídeo trafega direto entre os
-navegadores (WebRTC); o servidor Node.js só faz **sinalização** via
-Socket.IO — nenhum frame de vídeo passa pelo servidor.
+Aplicação de **compartilhamento de tela P2P** utilizando WebRTC.
 
-## Como funciona
+Os usuários entram em uma sala e podem compartilhar a tela simultaneamente. O vídeo e o áudio são transmitidos diretamente entre os navegadores.
 
-- **1 sala = N usuários** (o criador escolhe o limite, de 2 a 6).
-- **1 `RTCPeerConnection` por par de usuários na sala.** Cada tela
-  compartilhada é apenas uma `track` de vídeo adicionada a essa conexão
-  com `pc.addTrack()`. Isso é o que permite todo mundo compartilhar ao
-  mesmo tempo sem uma substituir a outra.
-- **Sem câmera:** só `getDisplayMedia({ video: true, audio: true })`,
-  usando o áudio do sistema/aba quando disponível.
-- **Renegociação automática:** ao clicar em "Compartilhar" ou "Parar",
-  `addTrack`/`replaceTrack` disparam `onnegotiationneeded`, que gera uma
-  nova oferta/resposta SDP trocada via Socket.IO.
-- **Perfect Negotiation:** como qualquer um dos lados pode iniciar uma
-  renegociação a qualquer momento, o cliente usa o padrão *perfect
-  negotiation* do WebRTC (um peer "polite", outro "impolite") para
-  resolver colisões de oferta sem travar a conexão.
-- **Mixer de áudio extra:** cada usuário pode adicionar fontes de áudio
-  extras (Discord, jogo, outra aba) que são roteadas via Web Audio API
-  no lado de quem recebe, com controle de volume/mudo por fonte.
-- **Salas com senha e limite configurável**, chat de texto e
-  reconexão automática após F5.
+O servidor Node.js é responsável pela **sinalização WebRTC, gerenciamento das salas e chat**. Os frames de vídeo não passam pelo servidor.
 
-## Estrutura
+## ✨ Recursos
 
-```
+* 🖥️ Compartilhamento de tela
+* 🔊 Compartilhamento de áudio
+* 👥 Salas de 2 a 6 participantes
+* 🔐 Salas com senha
+* 💬 Chat
+* 🔄 Reconexão automática
+* 🎚️ Mixer de áudio
+* 📊 Informações de FPS, resolução e conexão
+* 🔍 Zoom e pan
+* 🖥️ Tela cheia
+* 📺 Picture-in-Picture
+* 🌐 Comunicação P2P com WebRTC
+
+## 🛠️ Tecnologias
+
+* Node.js
+* Express
+* Socket.IO
+* WebRTC
+* Web Audio API
+* HTML
+* CSS
+* JavaScript ES Modules
+
+## 📁 Estrutura
+
+```text
 screen-share-p2p/
-├── package.json
-├── server.js                # entrypoint: Express + HTTPS + Socket.IO
+│
+├── cert/
+│   ├── localhost+2.pem
+│   └── localhost+2-key.pem
+│
+├── public/
+│   ├── index.html
+│   ├── css/
+│   │   └── styles.css
+│   └── js/
+│       ├── main.js
+│       ├── dom.js
+│       ├── utils.js
+│       ├── state.js
+│       ├── socketClient.js
+│       ├── sounds.js
+│       ├── zoomPan.js
+│       ├── statsPanel.js
+│       ├── webrtc.js
+│       ├── audioMixer.js
+│       ├── roomsLobby.js
+│       ├── chat.js
+│       ├── session.js
+│       └── roomEvents.js
+│
 ├── src/
-│   ├── config.js             # constantes (portas, limites, paths)
-│   ├── validation.js         # sanitização de entrada (sem Socket.IO)
-│   ├── rooms.js               # RoomsService: regras de negócio de salas
-│   ├── socket.js                # única camada que fala Socket.IO
-│   └── httpsServer.js           # criação do servidor HTTPS
-└── public/
-    ├── index.html            # estrutura da página (sem lógica/estilo inline)
-    ├── css/
-    │   └── styles.css         # todo o CSS
-    └── js/                    # ES modules (carregados via <script type="module">)
-        ├── main.js             # entrypoint: importa os módulos de feature
-        ├── dom.js              # referências centralizadas a elementos DOM
-        ├── utils.js            # utilidades genéricas (escapeHtml)
-        ├── state.js            # estado compartilhado (peers, sala atual, etc.)
-        ├── socketClient.js     # instância única do socket.io
-        ├── sounds.js           # sons de notificação (Web Audio API)
-        ├── zoomPan.js          # zoom, pan, tela cheia, Picture-in-Picture
-        ├── statsPanel.js       # resolução/fps/qualidade de conexão
-        ├── webrtc.js           # peer connections, perfect negotiation, share/stop
-        ├── audioMixer.js       # mixer de áudio extra (enviar/receber)
-        ├── roomsLobby.js       # lista de salas, modais de criar/entrar
-        ├── chat.js             # chat da sala
-        ├── session.js          # sessionStorage + reentrada automática (F5)
-        └── roomEvents.js       # orquestra os eventos de sala do servidor
+│   ├── config.js
+│   ├── validation.js
+│   ├── rooms.js
+│   ├── socket.js
+│   └── httpsServer.js
+│
+├── server.js
+├── package.json
+├── .gitignore
+└── README.md
 ```
 
-### Por que essa divisão?
+## 🚀 Instalação
 
-- **Backend:** `rooms.js` não sabe o que é Socket.IO — só entende "sala",
-  "membro", "senha". `socket.js` é a única camada que traduz eventos de
-  rede em chamadas a esse serviço. Isso torna a lógica de salas testável
-  isoladamente e deixa claro onde mexer quando o transporte mudar.
-- **Frontend:** cada módulo tem uma responsabilidade única (WebRTC, UI de
-  lobby, chat, mixer de áudio, etc.), evitando um único arquivo de 3000+
-  linhas com dezenas de variáveis globais. O estado compartilhado vive só
-  em `state.js`; os outros módulos importam o que precisam em vez de
-  declarar globais soltas.
+No **Windows**, abra o PowerShell na pasta do projeto.
 
-## Rodando localmente
+Instale as dependências:
 
-```bash
+```powershell
 npm install
+```
+
+## 🔒 Configurar HTTPS
+
+O projeto utiliza HTTPS para permitir o compartilhamento de tela.
+
+### 1. Criar a pasta `cert`
+
+```powershell
+mkdir cert
+```
+
+### 2. Entrar na pasta
+
+```powershell
+cd cert
+```
+
+### 3. Instalar o certificado local
+
+Se o `mkcert` ainda não estiver configurado:
+
+```powershell
+mkcert -install
+```
+
+### 4. Gerar o certificado
+
+```powershell
+mkcert localhost 127.0.0.1 ::1
+```
+
+Isso irá gerar os arquivos `.pem` dentro da pasta `cert`.
+
+O resultado será semelhante a:
+
+```text
+cert/
+├── localhost+2.pem
+└── localhost+2-key.pem
+```
+
+> Os nomes dos arquivos podem variar dependendo dos endereços informados ao `mkcert`.
+
+## ▶️ Executar
+
+Volte para a pasta principal do projeto:
+
+```powershell
+cd ..
+```
+
+Execute:
+
+```powershell
 npm start
 ```
 
-Abra `https://localhost:3000` em duas ou mais abas/navegadores (ou vários
-computadores na mesma rede, trocando `localhost` pelo IP da máquina que
-roda o servidor). Em cada aba, digite o **mesmo nome de sala** e clique em
-"Entrar na sala" (ou crie a sala escolhendo o limite de participantes).
-Depois, cada lado clica em "🖥 Compartilhar tela" quando quiser.
+Abra no navegador:
 
-## Importante sobre HTTPS
+```text
+https://localhost:3000
+```
 
-`getDisplayMedia` (captura de tela) só funciona em **contextos seguros**:
-`localhost` funciona sem HTTPS para testes, mas para usar em produção, entre
-redes/domínios diferentes, você precisa servir a página via **HTTPS**
-(ex.: atrás de um proxy reverso com certificado TLS, Nginx + Let's Encrypt,
-ou uma plataforma como Render/Railway/Fly.io que já fornece HTTPS).
+## 🖥️ Acessar de outro computador
 
-## Sobre o STUN/TURN
+Para testar em outro computador na mesma rede:
 
-O `RTCPeerConnection` está configurado apenas com um servidor STUN público
-(`stun:stun.l.google.com:19302`), suficiente para a maioria das redes
-domésticas/NAT simples. Se os usuários estiverem atrás de NATs
-simétricos/redes corporativas restritivas, a conexão direta pode falhar e
-será necessário um servidor **TURN** (relay) — isso é orientação de rede, não
-altera a arquitetura do código: basta adicionar as credenciais TURN no array
-`iceServers` de `public/js/webrtc.js`.
+1. Descubra o IPv4 da máquina que está executando o servidor:
 
-## Extensões possíveis
+```powershell
+ipconfig
+```
 
-- Múltiplas salas simultâneas já funcionam (o servidor já isola por `room`).
-- O limite de participantes por sala já é configurável (2 a 6) na criação.
-- Para salas muito maiores, a topologia mesh (1 `RTCPeerConnection` por par)
-  deixa de escalar bem — a partir de algumas dezenas de participantes valeria
-  migrar para um SFU, o que ficaria isolado em `public/js/webrtc.js` e
-  `src/socket.js` sem afetar o resto do app.
+2. Gere um certificado incluindo o IP da máquina.
+
+Por exemplo:
+
+```powershell
+cd cert
+mkcert localhost 127.0.0.1 ::1 192.168.1.100
+```
+
+Substitua `192.168.1.100` pelo IPv4 da sua máquina.
+
+3. Volte para a pasta do projeto:
+
+```powershell
+cd ..
+```
+
+4. Inicie o servidor:
+
+```powershell
+npm start
+```
+
+5. No outro computador, acesse:
+
+```text
+https://192.168.1.100:3000
+```
+
+O firewall do Windows pode solicitar permissão para o Node.js aceitar conexões.
+
+## 👥 Como usar
+
+1. Execute `npm start`.
+2. Abra `https://localhost:3000`.
+3. Crie uma sala ou entre em uma existente.
+4. Compartilhe o nome e a senha da sala, se houver.
+5. Clique em **Compartilhar tela**.
+
+Cada participante pode compartilhar sua tela simultaneamente.
+
+## 🌐 WebRTC
+
+A aplicação utiliza uma arquitetura **P2P mesh**.
+
+Cada participante estabelece uma conexão WebRTC com os demais participantes da sala.
+
+```text
+          Usuário A
+          /       \
+         /         \
+        /           \
+ Usuário B -------- Usuário C
+```
+
+O servidor não retransmite o vídeo.
+
+Ele é utilizado para:
+
+* gerenciamento das salas;
+* entrada e saída de participantes;
+* sinalização WebRTC;
+* troca de ofertas e respostas SDP;
+* troca de candidatos ICE;
+* chat.
+
+## 📡 STUN
+
+O WebRTC utiliza STUN para auxiliar no estabelecimento das conexões P2P.
+
+Atualmente:
+
+```text
+stun:stun.l.google.com:19302
+```
+
+Em algumas redes restritivas, uma conexão P2P direta pode não ser possível. Nesses casos, pode ser necessário adicionar um servidor TURN.
+
+A configuração fica em:
+
+```text
+public/js/webrtc.js
+```
+
+## 🔊 Áudio
+
+A captura utiliza:
+
+```javascript
+getDisplayMedia({
+    video: true,
+    audio: true
+});
+```
+
+O áudio disponível depende do navegador e do conteúdo selecionado.
+
+O projeto também possui um mixer baseado na Web Audio API para fontes adicionais de áudio.
+
+## ⚠️ Limitação
+
+A arquitetura utiliza conexões P2P entre os participantes.
+
+Por isso, o consumo de CPU, memória e banda aumenta conforme o número de participantes.
+
+O projeto foi pensado para **salas pequenas, de até 6 participantes**.
+
+Para salas muito maiores, uma arquitetura baseada em **SFU** seria mais adequada.
+
+## 🔐 Git
+
+Os certificados não devem ser enviados para o Git.
+
+Adicione ao `.gitignore`:
+
+```gitignore
+node_modules/
+cert/
+.env
+*.log
+```
+
+## 📌 Resumo
+
+No Windows:
+
+```powershell
+npm install
+
+mkdir cert
+cd cert
+
+mkcert -install
+mkcert localhost 127.0.0.1 ::1
+
+cd ..
+
+npm start
+```
+
+Depois acesse:
+
+```text
+https://localhost:3000
+```
