@@ -5,13 +5,12 @@
 // ======================================================
 
 module.exports = {
-  PORT: process.env.PORT || 3000,
 
+  PORT: process.env.PORT || 3000,
+  PUBLIC_DIR: 'public',
   CERT_DIR: 'cert',
   CERT_KEY_FILE: 'localhost+2-key.pem',
   CERT_FILE: 'localhost+2.pem',
-
-  PUBLIC_DIR: 'public',
 
   // Limite de pessoas por sala. Quem cria a sala escolhe o
   // tamanho dentro desse intervalo.
@@ -21,4 +20,5 @@ module.exports = {
 
   MAX_NAME_LENGTH: 30,
   MAX_CHAT_MESSAGE_LENGTH: 500
+
 };

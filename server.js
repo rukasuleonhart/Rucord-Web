@@ -15,10 +15,14 @@ const registerSocketHandlers = require('./src/socket');
 
 const app = express();
 
-app.use(express.static(path.join(__dirname, config.PUBLIC_DIR)));
+app.use(
+  express.static(
+    path.join(__dirname, config.PUBLIC_DIR)
+  )
+);
 
 // ======================================================
-// HTTPS + SOCKET.IO
+// HTTPS LOCALHOST + SOCKET.IO
 // ======================================================
 
 const server = createHttpsServer(app, {
@@ -28,7 +32,12 @@ const server = createHttpsServer(app, {
   certFile: config.CERT_FILE
 });
 
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: true,
+    credentials: true
+  }
+});
 
 // ======================================================
 // SALAS + SINALIZAÇÃO
@@ -45,9 +54,7 @@ registerSocketHandlers(io, roomsService);
 server.listen(config.PORT, '0.0.0.0', () => {
   console.log('');
   console.log('======================================');
-  console.log('Servidor HTTPS Fake iniciado');
+  console.log('Servidor HTTPS Localhost');
   console.log(`https://localhost:${config.PORT}`);
-  console.log(`SEU_IP:${config.PORT}`);
-  console.log('Não se esqueça de expor a porta 3000 no seu roteador');
   console.log('======================================');
 });
