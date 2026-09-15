@@ -93,6 +93,33 @@ redes/domínios diferentes, você precisa servir a página via **HTTPS**
 (ex.: atrás de um proxy reverso com certificado TLS, Nginx + Let's Encrypt,
 ou uma plataforma como Render/Railway/Fly.io que já fornece HTTPS).
 
+## Deploy em produção
+
+**Este app não funciona na Vercel.** A Vercel roda cada rota como uma
+função serverless isolada e de vida curta — não existe um processo Node
+contínuo para o Socket.IO manter conexões abertas, e o estado das salas
+(`RoomsService`, em memória) não sobrevive nem é compartilhado entre
+invocações. Sinalização em tempo real com WebSocket precisa de um
+processo que fique de pé o tempo todo.
+
+Use uma plataforma que rode Node como processo persistente. O `render.yaml`
+e o `Procfile` na raiz do projeto já deixam isso pronto:
+
+- **Render**: conecte o repositório, ele detecta o `render.yaml`
+  automaticamente (`npm install` + `npm start`). Gera HTTPS de graça.
+- **Railway**: conecte o repositório, ele usa o `Procfile`
+  (`web: node server.js`). Gera HTTPS de graça.
+- **Fly.io**: `fly launch`, ele detecta o Node/Procfile e sobe o app.
+
+Em qualquer uma delas a plataforma injeta a env var `PORT` automaticamente
+(o `src/config.js` já lê `process.env.PORT`) e o servidor detecta
+`NODE_ENV=production` para subir em HTTP puro (a plataforma cuida do
+TLS/HTTPS na borda). Se quiser restringir o CORS do Socket.IO a um domínio
+específico, defina a env var `ALLOWED_ORIGIN` (ex.:
+`https://seu-front.vercel.app`) — sem ela, aceita qualquer origem, o que é
+seguro quando front e back estão servidos do mesmo domínio, como é o caso
+aqui (`server.js` já serve `public/` e o Socket.IO na mesma porta).
+
 ## Sobre o STUN/TURN
 
 O `RTCPeerConnection` está configurado apenas com um servidor STUN público
