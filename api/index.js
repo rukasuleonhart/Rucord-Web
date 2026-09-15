@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 const path = require('path');
 const express = require('express');
@@ -10,17 +10,19 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(
-    express.strict(
-        path.join(__dirname, '..', config.PUBLIC_DIR)
-    )
+const publicPath = path.join(
+  __dirname,
+  '..',
+  config.PUBLIC_DIR
 );
 
+app.use(express.static(publicPath));
+
 app.get('/api/health', (req, res) => {
-    res.json({
-        ok: true,
-        enviroment: 'vercel'
-    });
+  res.status(200).json({
+    ok: true,
+    environment: process.env.VERCEL ? 'vercel' : 'local'
+  });
 });
 
 module.exports = app;
