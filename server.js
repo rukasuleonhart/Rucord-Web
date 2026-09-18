@@ -34,7 +34,7 @@ const server = createHttpsServer(app, {
 
 const io = new Server(server, {
   cors: {
-    origin: config.ALLOWED_ORIGIN || true,
+    origin: true,
     credentials: true
   }
 });
@@ -52,12 +52,9 @@ registerSocketHandlers(io, roomsService);
 // ======================================================
 
 server.listen(config.PORT, '0.0.0.0', () => {
-  const isHttps = typeof server.setSecureContext === 'function';
-  const protocol = isHttps ? 'https' : 'http';
-
   console.log('');
   console.log('======================================');
-  console.log(`Servidor ${protocol.toUpperCase()} rodando`);
-  console.log(`${protocol}://localhost:${config.PORT}`);
+  console.log('Servidor HTTPS Localhost');
+  console.log(`https://localhost:${config.PORT}`);
   console.log('======================================');
 });
