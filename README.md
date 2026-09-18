@@ -1,9 +1,7 @@
 ## 🚀 Instalação
 
-No **Windows**, abra o PowerShell na pasta do projeto.
-No **Windows**, abra o PowerShell ou CMD.
+No **Windows**, abra o **PowerShell** ou **CMD** na pasta onde deseja clonar o projeto.
 
-Instale as dependências:
 ### 1. Clonar o projeto
 
 Clone o repositório:
@@ -24,11 +22,14 @@ Execute:
 
 ```powershell
 npm install
-@@ -88,27 +104,65 @@ npm install
+```
 
-O projeto utiliza HTTPS para permitir o compartilhamento de tela.
+---
 
-### 1. Criar a pasta `cert`
+## 🔐 Configurar HTTPS
+
+O projeto utiliza **HTTPS** para permitir recursos como o compartilhamento de tela.
+
 Para gerar o certificado local, o projeto utiliza o **mkcert**.
 
 ### 3. Instalar o mkcert
@@ -49,7 +50,7 @@ Entre novamente na pasta do projeto:
 cd Rucord-Web
 ```
 
-> É importante abrir um novo terminal depois da instalação do `mkcert`, pois o Windows pode precisar atualizar a variável `PATH` para que o comando `mkcert` seja reconhecido.
+> É importante abrir um novo terminal após a instalação do `mkcert`, pois o Windows pode precisar atualizar a variável `PATH` para que o comando `mkcert` seja reconhecido.
 
 ### 4. Verificar a instalação
 
@@ -63,30 +64,26 @@ Se o comando retornar a versão do `mkcert`, a instalação foi concluída corre
 
 ### 5. Criar a pasta `cert`
 
-Na pasta principal do projeto:
+Na pasta principal do projeto, execute:
 
 ```powershell
 mkdir cert
 ```
 
-### 2. Entrar na pasta
 ### 6. Entrar na pasta `cert`
 
 ```powershell
 cd cert
 ```
 
-### 3. Instalar o certificado local
 ### 7. Instalar a autoridade certificadora local
 
-Se o `mkcert` ainda não estiver configurado:
 Execute:
 
 ```powershell
 mkcert -install
 ```
 
-### 4. Gerar o certificado
 Esse comando instala a autoridade certificadora local do `mkcert` no sistema.
 
 ### 8. Gerar o certificado
@@ -95,23 +92,48 @@ Execute:
 
 ```powershell
 mkcert localhost 127.0.0.1 ::1
-@@ -150,43 +204,60 @@ https://localhost:3000
+```
 
-Para testar em outro computador na mesma rede:
+Isso irá gerar os arquivos de certificado dentro da pasta `cert`.
 
-1. Descubra o IPv4 da máquina que está executando o servidor:
+### 9. Voltar para a pasta do projeto
+
+```powershell
+cd ..
+```
+
+### 10. Iniciar o projeto
+
+Execute:
+
+```powershell
+npm start
+```
+
+Depois, acesse:
+
+```text
+https://localhost:3000
+```
+
+---
+
+## 🖥️ Acesso pela rede local
+
+Para testar o projeto em outro computador conectado à mesma rede:
+
 ### 1. Descobrir o IPv4 da máquina
 
-Na máquina que está executando o servidor:
+Na máquina que está executando o servidor, execute:
 
 ```powershell
 ipconfig
 ```
 
-2. Gere um certificado incluindo o IP da máquina.
-Identifique o endereço IPv4, por exemplo:
+Identifique o endereço **IPv4** da interface de rede utilizada.
 
 Por exemplo:
+
 ```text
 192.168.1.100
 ```
@@ -132,21 +154,20 @@ mkcert localhost 127.0.0.1 ::1 192.168.1.100
 
 Substitua `192.168.1.100` pelo IPv4 da sua máquina.
 
-3. Volte para a pasta do projeto:
+> Se você já tiver gerado um certificado anteriormente, o certificado utilizado pelo servidor deverá ser substituído pelo novo certificado que inclui o endereço IP.
+
 ### 3. Voltar para a pasta do projeto
 
 ```powershell
 cd ..
 ```
 
-4. Inicie o servidor:
 ### 4. Iniciar o servidor
 
 ```powershell
 npm start
 ```
 
-5. No outro computador, acesse:
 ### 5. Acessar pelo outro computador
 
 No outro computador, acesse:
@@ -155,18 +176,35 @@ No outro computador, acesse:
 https://192.168.1.100:3000
 ```
 
+Substitua `192.168.1.100` pelo IPv4 da máquina que está executando o servidor.
+
 O firewall do Windows pode solicitar permissão para o Node.js aceitar conexões.
 
-> **Importante:** para evitar problemas de certificado, o endereço utilizado para acessar o servidor deve estar incluído no certificado gerado pelo `mkcert`.
+> **Importante:** para evitar problemas relacionados ao certificado, o endereço utilizado para acessar o servidor deve estar incluído no certificado gerado pelo `mkcert`.
 
-## 🌐 Acessar pela Internet
+---
+
+## 🌐 Acesso pela Internet
 
 Para permitir que pessoas fora da sua rede local acessem o Rucord Web, é necessário configurar o **redirecionamento de porta (Port Forwarding)** no roteador.
-@@ -355,19 +426,58 @@ cert/
-*.log
+
+De forma geral:
+
+1. Configure o redirecionamento da porta utilizada pelo servidor para o computador que está executando o Rucord Web.
+2. Libere a porta no firewall do Windows, se necessário.
+3. Gere um certificado que inclua o endereço utilizado para acessar o servidor.
+4. Envie aos usuários o endereço público do servidor.
+
+O endereço poderá ter um formato semelhante a:
+
+```text
+https://SEU_IP_EXTERNO:PORTA
 ```
 
-## 📌 Resumo
+> **Atenção:** utilizar um certificado `mkcert` não é uma solução adequada para distribuir um serviço publicamente pela Internet, pois a autoridade certificadora local do `mkcert` não é confiável por padrão nos computadores dos outros usuários. Para acesso público, considere utilizar um certificado emitido por uma autoridade certificadora pública, como o Let's Encrypt.
+
+---
+
 ## 📌 Instalação rápida
 
 No Windows:
@@ -194,7 +232,7 @@ winget install FiloSottile.mkcert
 
 **Feche completamente o CMD ou PowerShell.**
 
-Depois abra um **novo CMD ou PowerShell** e entre novamente na pasta:
+Depois, abra um novo terminal e entre novamente na pasta do projeto:
 
 ```powershell
 cd Rucord-Web
@@ -222,21 +260,30 @@ mkcert localhost 127.0.0.1 ::1
 cd ..
 
 npm start
-@@ -379,13 +489,15 @@ Depois acesse:
+```
+
+Depois, acesse:
+
+```text
 https://localhost:3000
 ```
 
-Para acesso pela rede local:
 ### Acesso pela rede local
+
+Para acessar a partir de outro computador na mesma rede:
 
 ```text
 https://IP_LOCAL:3000
 ```
 
-Para acesso pela Internet, configure o **redirecionamento da porta no roteador**, libere a porta no firewall quando necessário e envie para os usuários:
+O `IP_LOCAL` deve estar incluído no certificado gerado pelo `mkcert`.
+
 ### Acesso pela Internet
 
-Configure o **redirecionamento da porta no roteador**, libere a porta no firewall quando necessário e envie para os usuários:
+Configure o **redirecionamento da porta no roteador**, libere a porta no firewall quando necessário e utilize um certificado apropriado para acesso público.
+
+O endereço poderá ser:
 
 ```text
 https://SEU_IP_EXTERNO:PORTA
+```
