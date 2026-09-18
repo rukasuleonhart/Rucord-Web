@@ -1,140 +1,242 @@
-# Screen Share P2P (WebRTC bidirecional)
+## 🚀 Instalação
 
-Compartilhamento de tela P2P entre usuários de uma sala, cada um podendo
-compartilhar e assistir simultaneamente. O vídeo trafega direto entre os
-navegadores (WebRTC); o servidor Node.js só faz **sinalização** via
-Socket.IO — nenhum frame de vídeo passa pelo servidor.
+No **Windows**, abra o PowerShell na pasta do projeto.
+No **Windows**, abra o PowerShell ou CMD.
 
-## Como funciona
+Instale as dependências:
+### 1. Clonar o projeto
 
-- **1 sala = N usuários** (o criador escolhe o limite, de 2 a 6).
-- **1 `RTCPeerConnection` por par de usuários na sala.** Cada tela
-  compartilhada é apenas uma `track` de vídeo adicionada a essa conexão
-  com `pc.addTrack()`. Isso é o que permite todo mundo compartilhar ao
-  mesmo tempo sem uma substituir a outra.
-- **Sem câmera:** só `getDisplayMedia({ video: true, audio: true })`,
-  usando o áudio do sistema/aba quando disponível.
-- **Renegociação automática:** ao clicar em "Compartilhar" ou "Parar",
-  `addTrack`/`replaceTrack` disparam `onnegotiationneeded`, que gera uma
-  nova oferta/resposta SDP trocada via Socket.IO.
-- **Perfect Negotiation:** como qualquer um dos lados pode iniciar uma
-  renegociação a qualquer momento, o cliente usa o padrão *perfect
-  negotiation* do WebRTC (um peer "polite", outro "impolite") para
-  resolver colisões de oferta sem travar a conexão.
-- **Mixer de áudio extra:** cada usuário pode adicionar fontes de áudio
-  extras (Discord, jogo, outra aba) que são roteadas via Web Audio API
-  no lado de quem recebe, com controle de volume/mudo por fonte.
-- **Salas com senha e limite configurável**, chat de texto e
-  reconexão automática após F5.
+Clone o repositório:
 
-## Estrutura
-
-```
-screen-share-p2p/
-├── package.json
-├── server.js                # entrypoint: Express + HTTPS + Socket.IO
-├── src/
-│   ├── config.js             # constantes (portas, limites, paths)
-│   ├── validation.js         # sanitização de entrada (sem Socket.IO)
-│   ├── rooms.js               # RoomsService: regras de negócio de salas
-│   ├── socket.js                # única camada que fala Socket.IO
-│   └── httpsServer.js           # criação do servidor HTTPS
-└── public/
-    ├── index.html            # estrutura da página (sem lógica/estilo inline)
-    ├── css/
-    │   └── styles.css         # todo o CSS
-    └── js/                    # ES modules (carregados via <script type="module">)
-        ├── main.js             # entrypoint: importa os módulos de feature
-        ├── dom.js              # referências centralizadas a elementos DOM
-        ├── utils.js            # utilidades genéricas (escapeHtml)
-        ├── state.js            # estado compartilhado (peers, sala atual, etc.)
-        ├── socketClient.js     # instância única do socket.io
-        ├── sounds.js           # sons de notificação (Web Audio API)
-        ├── zoomPan.js          # zoom, pan, tela cheia, Picture-in-Picture
-        ├── statsPanel.js       # resolução/fps/qualidade de conexão
-        ├── webrtc.js           # peer connections, perfect negotiation, share/stop
-        ├── audioMixer.js       # mixer de áudio extra (enviar/receber)
-        ├── roomsLobby.js       # lista de salas, modais de criar/entrar
-        ├── chat.js             # chat da sala
-        ├── session.js          # sessionStorage + reentrada automática (F5)
-        └── roomEvents.js       # orquestra os eventos de sala do servidor
+```powershell
+git clone https://github.com/rukasuleonhart/Rucord-Web.git
 ```
 
-### Por que essa divisão?
+Entre na pasta do projeto:
 
-- **Backend:** `rooms.js` não sabe o que é Socket.IO — só entende "sala",
-  "membro", "senha". `socket.js` é a única camada que traduz eventos de
-  rede em chamadas a esse serviço. Isso torna a lógica de salas testável
-  isoladamente e deixa claro onde mexer quando o transporte mudar.
-- **Frontend:** cada módulo tem uma responsabilidade única (WebRTC, UI de
-  lobby, chat, mixer de áudio, etc.), evitando um único arquivo de 3000+
-  linhas com dezenas de variáveis globais. O estado compartilhado vive só
-  em `state.js`; os outros módulos importam o que precisam em vez de
-  declarar globais soltas.
+```powershell
+cd Rucord-Web
+```
 
-## Rodando localmente
+### 2. Instalar as dependências
 
-```bash
+Execute:
+
+```powershell
 npm install
+@@ -88,27 +104,65 @@ npm install
+
+O projeto utiliza HTTPS para permitir o compartilhamento de tela.
+
+### 1. Criar a pasta `cert`
+Para gerar o certificado local, o projeto utiliza o **mkcert**.
+
+### 3. Instalar o mkcert
+
+No Windows, execute:
+
+```powershell
+winget install FiloSottile.mkcert
+```
+
+Após a instalação, **feche completamente o CMD ou PowerShell**.
+
+Depois, abra um **novo CMD ou PowerShell**.
+
+Entre novamente na pasta do projeto:
+
+```powershell
+cd Rucord-Web
+```
+
+> É importante abrir um novo terminal depois da instalação do `mkcert`, pois o Windows pode precisar atualizar a variável `PATH` para que o comando `mkcert` seja reconhecido.
+
+### 4. Verificar a instalação
+
+Execute:
+
+```powershell
+mkcert -version
+```
+
+Se o comando retornar a versão do `mkcert`, a instalação foi concluída corretamente.
+
+### 5. Criar a pasta `cert`
+
+Na pasta principal do projeto:
+
+```powershell
+mkdir cert
+```
+
+### 2. Entrar na pasta
+### 6. Entrar na pasta `cert`
+
+```powershell
+cd cert
+```
+
+### 3. Instalar o certificado local
+### 7. Instalar a autoridade certificadora local
+
+Se o `mkcert` ainda não estiver configurado:
+Execute:
+
+```powershell
+mkcert -install
+```
+
+### 4. Gerar o certificado
+Esse comando instala a autoridade certificadora local do `mkcert` no sistema.
+
+### 8. Gerar o certificado
+
+Execute:
+
+```powershell
+mkcert localhost 127.0.0.1 ::1
+@@ -150,43 +204,60 @@ https://localhost:3000
+
+Para testar em outro computador na mesma rede:
+
+1. Descubra o IPv4 da máquina que está executando o servidor:
+### 1. Descobrir o IPv4 da máquina
+
+Na máquina que está executando o servidor:
+
+```powershell
+ipconfig
+```
+
+2. Gere um certificado incluindo o IP da máquina.
+Identifique o endereço IPv4, por exemplo:
+
+Por exemplo:
+```text
+192.168.1.100
+```
+
+### 2. Gerar um certificado incluindo o IP da máquina
+
+Entre na pasta `cert`:
+
+```powershell
+cd cert
+```
+
+Execute:
+
+```powershell
+mkcert localhost 127.0.0.1 ::1 192.168.1.100
+```
+
+Substitua `192.168.1.100` pelo IPv4 da sua máquina.
+
+3. Volte para a pasta do projeto:
+### 3. Voltar para a pasta do projeto
+
+```powershell
+cd ..
+```
+
+4. Inicie o servidor:
+### 4. Iniciar o servidor
+
+```powershell
 npm start
 ```
 
-Abra `https://localhost:3000` em duas ou mais abas/navegadores (ou vários
-computadores na mesma rede, trocando `localhost` pelo IP da máquina que
-roda o servidor). Em cada aba, digite o **mesmo nome de sala** e clique em
-"Entrar na sala" (ou crie a sala escolhendo o limite de participantes).
-Depois, cada lado clica em "🖥 Compartilhar tela" quando quiser.
+5. No outro computador, acesse:
+### 5. Acessar pelo outro computador
 
-## Importante sobre HTTPS
+No outro computador, acesse:
 
-`getDisplayMedia` (captura de tela) só funciona em **contextos seguros**:
-`localhost` funciona sem HTTPS para testes, mas para usar em produção, entre
-redes/domínios diferentes, você precisa servir a página via **HTTPS**
-(ex.: atrás de um proxy reverso com certificado TLS, Nginx + Let's Encrypt,
-ou uma plataforma como Render/Railway/Fly.io que já fornece HTTPS).
+```text
+https://192.168.1.100:3000
+```
 
-## Deploy em produção
+O firewall do Windows pode solicitar permissão para o Node.js aceitar conexões.
 
-**Este app não funciona na Vercel.** A Vercel roda cada rota como uma
-função serverless isolada e de vida curta — não existe um processo Node
-contínuo para o Socket.IO manter conexões abertas, e o estado das salas
-(`RoomsService`, em memória) não sobrevive nem é compartilhado entre
-invocações. Sinalização em tempo real com WebSocket precisa de um
-processo que fique de pé o tempo todo.
+> **Importante:** para evitar problemas de certificado, o endereço utilizado para acessar o servidor deve estar incluído no certificado gerado pelo `mkcert`.
 
-Use uma plataforma que rode Node como processo persistente. O `render.yaml`
-e o `Procfile` na raiz do projeto já deixam isso pronto:
+## 🌐 Acessar pela Internet
 
-- **Render**: conecte o repositório, ele detecta o `render.yaml`
-  automaticamente (`npm install` + `npm start`). Gera HTTPS de graça.
-- **Railway**: conecte o repositório, ele usa o `Procfile`
-  (`web: node server.js`). Gera HTTPS de graça.
-- **Fly.io**: `fly launch`, ele detecta o Node/Procfile e sobe o app.
+Para permitir que pessoas fora da sua rede local acessem o Rucord Web, é necessário configurar o **redirecionamento de porta (Port Forwarding)** no roteador.
+@@ -355,19 +426,58 @@ cert/
+*.log
+```
 
-Em qualquer uma delas a plataforma injeta a env var `PORT` automaticamente
-(o `src/config.js` já lê `process.env.PORT`) e o servidor detecta
-`NODE_ENV=production` para subir em HTTP puro (a plataforma cuida do
-TLS/HTTPS na borda). Se quiser restringir o CORS do Socket.IO a um domínio
-específico, defina a env var `ALLOWED_ORIGIN` (ex.:
-`https://seu-front.vercel.app`) — sem ela, aceita qualquer origem, o que é
-seguro quando front e back estão servidos do mesmo domínio, como é o caso
-aqui (`server.js` já serve `public/` e o Socket.IO na mesma porta).
+## 📌 Resumo
+## 📌 Instalação rápida
 
-## Sobre o STUN/TURN
+No Windows:
 
-O `RTCPeerConnection` está configurado apenas com um servidor STUN público
-(`stun:stun.l.google.com:19302`), suficiente para a maioria das redes
-domésticas/NAT simples. Se os usuários estiverem atrás de NATs
-simétricos/redes corporativas restritivas, a conexão direta pode falhar e
-será necessário um servidor **TURN** (relay) — isso é orientação de rede, não
-altera a arquitetura do código: basta adicionar as credenciais TURN no array
-`iceServers` de `public/js/webrtc.js`.
+### 1. Clonar o projeto
 
-## Extensões possíveis
+```powershell
+git clone https://github.com/rukasuleonhart/Rucord-Web.git
+cd Rucord-Web
+```
 
-- Múltiplas salas simultâneas já funcionam (o servidor já isola por `room`).
-- O limite de participantes por sala já é configurável (2 a 6) na criação.
-- Para salas muito maiores, a topologia mesh (1 `RTCPeerConnection` por par)
-  deixa de escalar bem — a partir de algumas dezenas de participantes valeria
-  migrar para um SFU, o que ficaria isolado em `public/js/webrtc.js` e
-  `src/socket.js` sem afetar o resto do app.
+### 2. Instalar as dependências
+
+```powershell
+npm install
+```
+
+### 3. Instalar o mkcert
+
+```powershell
+winget install FiloSottile.mkcert
+```
+
+### 4. Fechar e abrir novamente o terminal
+
+**Feche completamente o CMD ou PowerShell.**
+
+Depois abra um **novo CMD ou PowerShell** e entre novamente na pasta:
+
+```powershell
+cd Rucord-Web
+```
+
+### 5. Verificar o mkcert
+
+```powershell
+mkcert -version
+```
+
+### 6. Criar os certificados
+
+```powershell
+mkdir cert
+cd cert
+
+mkcert -install
+mkcert localhost 127.0.0.1 ::1
+```
+
+### 7. Iniciar o projeto
+
+```powershell
+cd ..
+
+npm start
+@@ -379,13 +489,15 @@ Depois acesse:
+https://localhost:3000
+```
+
+Para acesso pela rede local:
+### Acesso pela rede local
+
+```text
+https://IP_LOCAL:3000
+```
+
+Para acesso pela Internet, configure o **redirecionamento da porta no roteador**, libere a porta no firewall quando necessário e envie para os usuários:
+### Acesso pela Internet
+
+Configure o **redirecionamento da porta no roteador**, libere a porta no firewall quando necessário e envie para os usuários:
+
+```text
+https://SEU_IP_EXTERNO:PORTA
